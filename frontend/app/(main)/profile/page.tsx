@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import {
     Check,
     Edit3,
     Grid3X3,
     Loader2,
     Lock,
-    MoreHorizontal,
     Play,
     Sparkles,
     UserRound,
@@ -198,22 +198,24 @@ export default function ProfilePage() {
             setTimeout(() => {
                 setShowEdit(false);
             }, 700);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Profile update failed:", err);
-
-            const data = err?.response?.data;
 
             let message = "Unable to update your profile.";
 
-            if (data?.detail) {
-                message = data.detail;
-            } else if (data) {
-                const firstError = Object.values(data)[0];
+            if (axios.isAxiosError(err)) {
+                const data = err.response?.data;
 
-                if (Array.isArray(firstError)) {
-                    message = firstError.join(" ");
-                } else if (typeof firstError === "string") {
-                    message = firstError;
+                if (data?.detail) {
+                    message = data.detail;
+                } else if (data) {
+                    const firstError = Object.values(data)[0];
+
+                    if (Array.isArray(firstError)) {
+                        message = firstError.join(" ");
+                    } else if (typeof firstError === "string") {
+                        message = firstError;
+                    }
                 }
             }
 
@@ -258,7 +260,7 @@ export default function ProfilePage() {
                     </h1>
 
                     <p className="mt-2 text-sm text-[var(--muted)]">
-                        {error || "We couldn't load your profile."}
+                        {error || "We couldn&apos;t load your profile."}
                     </p>
                 </div>
             </div>
@@ -442,7 +444,7 @@ export default function ProfilePage() {
                         </h2>
 
                         <p className="text-xs text-[var(--muted)]">
-                            Everything you've shared with the WhisperHub
+                            Everything you&apos;ve shared with the WhisperHub
                             community.
                         </p>
                     </div>

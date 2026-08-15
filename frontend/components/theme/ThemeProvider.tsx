@@ -20,10 +20,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = window.localStorage.getItem("whisperhub-theme") as ThemeMode | null;
       const initial = stored ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      setTheme(initial);
+      // Defer state update to avoid synchronous setState in effect
+      queueMicrotask(() => setTheme(initial));
     } catch (e) {
       // If any error occurs (e.g., localStorage not available), keep default.
-      // eslint-disable-next-line no-console
       console.error("Theme init error", e);
     }
   }, []);

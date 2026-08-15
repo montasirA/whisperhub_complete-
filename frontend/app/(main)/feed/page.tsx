@@ -69,7 +69,10 @@ export default function FeedPage() {
     };
 
     useEffect(() => {
-        void loadFeed();
+        // Defer calling loadFeed to avoid synchronous setState within effect
+        queueMicrotask(() => {
+            void loadFeed();
+        });
     }, []);
 
     const refreshFeed = async () => {

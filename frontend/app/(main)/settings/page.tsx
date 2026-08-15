@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 import {
     ArrowLeft,
     Check,
@@ -36,14 +37,16 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (!user) return;
-
-        setUsername(user.username || "");
-        setDisplayName(user.display_name || "");
-        setBio(user.bio || "");
-        setStatusMessage(user.status_message || "");
-        setEmojiAvatar(user.emoji_avatar || "🐱");
-        setThemeColor(user.theme_color || "#7C5CFC");
-        setPrivacyLevel(user.privacy_level || "public");
+        // Defer multiple state updates to avoid synchronous setState in effect
+        queueMicrotask(() => {
+            setUsername(user.username || "");
+            setDisplayName(user.display_name || "");
+            setBio(user.bio || "");
+            setStatusMessage(user.status_message || "");
+            setEmojiAvatar(user.emoji_avatar || "🐱");
+            setThemeColor(user.theme_color || "#7C5CFC");
+            setPrivacyLevel(user.privacy_level || "public");
+        });
     }, [user]);
 
     const handleSave = async () => {
@@ -71,22 +74,26 @@ export default function SettingsPage() {
 
             setSuccess("Changes saved successfully.");
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Settings update failed:", err);
 
-            const data = err?.response?.data;
+            if (axios.isAxiosError(err)) {
+                const data = err.response?.data;
 
-            if (data?.username) {
-                setError(
-                    Array.isArray(data.username)
-                        ? data.username.join(" ")
-                        : data.username
-                );
+                if (data?.username) {
+                    setError(
+                        Array.isArray(data.username)
+                            ? data.username.join(" ")
+                            : data.username
+                    );
+                } else {
+                    setError(
+                        data?.detail ||
+                        "Could not save your changes."
+                    );
+                }
             } else {
-                setError(
-                    data?.detail ||
-                    "Could not save your changes."
-                );
+                setError("Could not save your changes.");
             }
         } finally {
             setSaving(false);
